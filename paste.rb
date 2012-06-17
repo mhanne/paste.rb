@@ -5,7 +5,6 @@ DB = Sequel.connect("sqlite://paste.db")
 unless DB.tables.include?(:paste)
   DB.create_table :paste do
     column :hash, :string
-    column :lang, :string
     column :content, :bytea
     column :public, :boolean
   end

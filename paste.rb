@@ -1,4 +1,4 @@
-%w[sinatra haml sequel coderay digest].each {|r| require r }
+%w[bundler/setup sinatra/base haml sequel coderay digest].each {|r| require r }
 
 DB = Sequel.connect("sqlite://paste.db")
 
@@ -11,6 +11,9 @@ unless DB.tables.include?(:paste)
 end
 
 LANGS = [:text, :c, :cpp, :css, :diff, :erb, :haml, :html, :java, :javascript, :json, :php, :python, :ruby, :sql, :xml, :yaml]
+
+class App < Sinatra::Base
+self.inline_templates = __FILE__
 
 get '/' do
   @langs = LANGS
@@ -39,6 +42,10 @@ get '/raw/:id' do |id|
   content_type 'text/plain'
   @paste = DB[:paste][hash: id][:content]
 end
+
+end
+
+Rack::Handler::Thin.run(App.new, :Port => (ARGV[0] || 4000))
 
 __END__
 

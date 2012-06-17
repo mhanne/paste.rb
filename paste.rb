@@ -20,8 +20,8 @@ end
 
 post '/new' do
   hash = Digest::SHA1.hexdigest(params[:content])
-  DB[:paste].insert(hash: hash, content: params[:content], lang: params[:lang], public: (params[:public] && params[:public] == 'true'))
-  redirect to("/p/#{hash}")
+  DB[:paste].insert(hash: hash, content: params[:content], public: (params[:public] && params[:public] == 'true'))  unless DB[:paste][hash: hash]
+  redirect to("/p/#{hash}?hl=#{params[:lang]}")
 end
 
 get '/search' do
@@ -32,8 +32,12 @@ get '/search' do
 end
 
 get '/p/:id' do |id|
-  @paste = DB[:paste][:hash => id]
+  @paste = DB[:paste][hash: id]
   haml :paste
+end
+
+get '/raw/:id' do |id|
+  @paste = DB[:paste][hash: id][:content]
 end
 
 __END__
@@ -63,8 +67,12 @@ __END__
 
 @@ paste
 %h1= (@paste[:public] ? "Public" : "Private") + " paste " + @paste[:hash]
-= CodeRay.scan(@paste[:content], @paste[:lang]).div(line_numbers: :table)
+= CodeRay.scan(@paste[:content], params[:hl]).div(line_numbers: :table)
+%a{href: "/raw/#{@paste[:hash]}"} Raw Format
+|
 %a{href: "/"} New Paste
+|
+%a{href: "/search"} Search
 
 @@ search
 %h1 Search

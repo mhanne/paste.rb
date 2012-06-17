@@ -37,6 +37,7 @@ get '/p/:id' do |id|
 end
 
 get '/raw/:id' do |id|
+  content_type 'text/plain'
   @paste = DB[:paste][hash: id][:content]
 end
 

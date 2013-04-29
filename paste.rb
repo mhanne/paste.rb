@@ -15,6 +15,10 @@ LANGS = [:text, :c, :cpp, :css, :diff, :erb, :haml, :html, :java, :javascript, :
 class App < Sinatra::Base
 self.inline_templates = __FILE__
 
+helpers do
+  def h text; Rack::Utils.escape_html(text); end
+end
+
 get '/' do
   @langs = LANGS
   haml :index
@@ -28,7 +32,7 @@ end
 
 get '/search' do
   if @term = params[:q]
-    @pastes = DB[:paste].where(public: true).filter(:content.like("%#{@term}%"))
+    @pastes = DB[:paste].where(public: true).filter(:content.downcase.like("%#{@term.downcase}%"))
   end
   haml :search
 end
@@ -93,3 +97,4 @@ __END__
     - @pastes.each do |paste|
       %li
         %a{href: "/p/" + paste[:hash]}= paste[:hash]
+        %pre= h paste[:content].split("\n")[0..3].join("\n")
